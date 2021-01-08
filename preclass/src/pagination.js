@@ -20,10 +20,12 @@ class Pagination {
         this.maxRequestTimeout = options.maxRequestTimeout
     }
 
-    static sleep = ms => new Promise(r => setTimeout(r, ms))
+    static sleep(ms) {
+        return new Promise(r => setTimeout(r, ms))
+    }
 
     async handleRequest({ url, page, retries = 1 }) {
-        
+
         try {
             const finalUrl = `${url}?tid=${page}`
             const result = await this.request.makeRequest({
@@ -52,7 +54,7 @@ class Pagination {
         const lastId = result[result.length - 1]?.tid ?? 0
 
         // ultimo é por volta de 770K
-        if (lastId === 0) return 0;
+        if (lastId === 0) return;
 
         yield result
         await Pagination.sleep(this.threshold)

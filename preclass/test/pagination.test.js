@@ -2,7 +2,8 @@ const { describe, it, before, afterEach, } = require('mocha')
 const assert = require('assert');
 const Pagination = require('../src/pagination');
 const Request = require('../src/request');
-const { createSandbox } = require('sinon');
+const { createSandbox, stub } = require('sinon');
+const { type } = require('os');
 
 
 describe('Pagination tests', function () {
@@ -14,6 +15,16 @@ describe('Pagination tests', function () {
     })
     afterEach(() => sandbox.restore())
     describe('#Pagination', () => {
+        it(`#sleep`, async () => {
+            const clock = sandbox.useFakeTimers();
+            const pendingPromise = Pagination.sleep(1)
+            clock.tick(1);
+
+            assert.ok(pendingPromise instanceof Promise)
+            const result = await pendingPromise 
+            assert.ok(result === undefined)
+        })
+        
         it(`should have default options on Pagination instance`, () => {
             const pagination = new Pagination();
             const expectedProperties = {
@@ -27,6 +38,7 @@ describe('Pagination tests', function () {
 
             assert.ok(pagination.request instanceof Request)
             assert.deepStrictEqual(JSON.stringify(pagination), JSON.stringify(expectedProperties))
+
         })
 
         it(`should set default options on Pagination instance`, () => {
@@ -63,7 +75,7 @@ describe('Pagination tests', function () {
             sandbox.stub(
                 pagination.request,
                 pagination.request.makeRequest.name,
-            ).throws(error)
+            ).rejects(error)
 
             sandbox.stub(
                 Pagination,
@@ -169,10 +181,10 @@ describe('Pagination tests', function () {
             const data = { url: 'google.com', page: 1 }
             const iterator = await pagination.getPaginated(data)
             const [firstResult, secondResult] = await Promise.all([iterator.next(), iterator.next()])
-            
+
             const expectedFirstCall = { done: false, value: [responseMock[0]] }
             assert.deepStrictEqual(firstResult, expectedFirstCall)
-            
+
             const expectedSecondCall = { done: true, value: undefined }
             assert.deepStrictEqual(secondResult, expectedSecondCall)
 

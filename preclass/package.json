@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test:dev": "npx mocha -w --exit test/",
-    "test": "npx mocha --parallel test/",
-    "test:cov": "npx nyc --check-coverage --instrument --reporter=html --reporter=text npm test",
+    "test": "npx mocha --parallel --recursive test/",
+    "test:cov": "npx nyc --check-coverage --instrument --reporter=html --reporter=text mocha --parallel --recursive test/",
     "start": "node src/"
   },
   "keywords": [],
