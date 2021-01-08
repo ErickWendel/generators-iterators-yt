@@ -1,0 +1,14 @@
+
+describe('#handleRequest', () => {
+
+    it(`should retry an request twice before throwing an exception`)
+    it(`should return data from request when succeded`)
+})
+
+describe('#getPaginated', () => {
+
+    it(`should update request id on each request`)
+    it(`should update tid on each request page`)
+    it(`should call #sleep twice after two pages`)
+    it(`should stop requesting when request returns an empty array`)
+})
