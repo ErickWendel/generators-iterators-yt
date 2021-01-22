@@ -1,8 +1,6 @@
 // https://www.mercadobitcoin.net/api/BTC/trades/?tid=3706
 const Request = require('./request')
 
-
-
 const DEFAULT_OPTIONS = {
     maxRetries: 4,
     maxRequestTimeout: 1000,

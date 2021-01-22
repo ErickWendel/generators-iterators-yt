@@ -2,8 +2,7 @@ const { describe, it, before, afterEach, } = require('mocha')
 const assert = require('assert');
 const Pagination = require('../src/pagination');
 const Request = require('../src/request');
-const { createSandbox, stub } = require('sinon');
-const { type } = require('os');
+const { createSandbox } = require('sinon');
 
 
 describe('Pagination tests', function () {
@@ -21,43 +20,44 @@ describe('Pagination tests', function () {
             clock.tick(1);
 
             assert.ok(pendingPromise instanceof Promise)
-            const result = await pendingPromise 
+            const result = await pendingPromise
             assert.ok(result === undefined)
         })
-        
-        it(`should have default options on Pagination instance`, () => {
-            const pagination = new Pagination();
-            const expectedProperties = {
-                request: {},
 
-                maxRetries: 4,
-                retryTimeout: 1000,
-                threshold: 200,
-                maxRequestTimeout: 1000,
-            }
+        // it(`should have default options on Pagination instance`, () => {
+        //     const pagination = new Pagination();
+        //     const expectedProperties = {
+        //         maxRetries: 4,
+        //         retryTimeout: 1000,
+        //         threshold: 200,
+        //         maxRequestTimeout: 1000,
+        //     }
 
-            assert.ok(pagination.request instanceof Request)
-            assert.deepStrictEqual(JSON.stringify(pagination), JSON.stringify(expectedProperties))
+        //     assert.ok(pagination.request instanceof Request)
+        //     Reflect.deleteProperty(pagination, "request")
 
-        })
+        //     const getEntries = item => Object.entries(item)
+        //     assert.deepStrictEqual(getEntries(pagination), getEntries(expectedProperties))
 
-        it(`should set default options on Pagination instance`, () => {
-            const params = {
-                maxRetries: 2,
-                retryTimeout: 100,
-                threshold: 10,
-                maxRequestTimeout: 10,
-            }
+        // })
 
-            const pagination = new Pagination(params);
-            const expectedProperties = {
-                request: {},
-                ...params
-            }
+        // it(`should set default options on Pagination instance`, () => {
+        //     const params = {
+        //         maxRetries: 2,
+        //         retryTimeout: 100,
+        //         threshold: 10,
+        //         maxRequestTimeout: 10,
+        //     }
 
-            assert.ok(pagination.request instanceof Request)
-            assert.deepStrictEqual(JSON.stringify(pagination), JSON.stringify(expectedProperties))
-        })
+        //     const pagination = new Pagination(params);
+        //     const expectedProperties = {
+        //         request: {},
+        //         ...params
+        //     }
+
+        //     assert.ok(pagination.request instanceof Request)
+        //     assert.deepStrictEqual(JSON.stringify(pagination), JSON.stringify(expectedProperties))
+        // })
     })
 
     describe('#handleRequest', () => {
@@ -82,22 +82,27 @@ describe('Pagination tests', function () {
                 Pagination.sleep.name,
             ).resolves()
 
-
+            // 1o
             sandbox.spy(pagination, pagination.handleRequest.name)
 
             const dataRequest = { url: 'google.com', page: 0 }
             await assert.rejects(pagination.handleRequest(dataRequest), error)
             assert.deepStrictEqual(pagination.handleRequest.callCount, expectedCallCount)
+            // 
 
+            // 2o
             const lastCall = 1
-            assert.deepStrictEqual(pagination.handleRequest.getCall(lastCall).firstArg.retries, expectedCallCount)
+            const firstCallArg = pagination.handleRequest.getCall(lastCall).firstArg
+            const firstCallRetries = firstCallArg.retries
+            assert.deepStrictEqual(firstCallRetries, expectedCallCount)
 
             const data = {
                 url: `${dataRequest.url}?tid=${dataRequest.page}`,
                 method: 'get',
                 timeout: expectedTimeout
             }
-            assert.deepStrictEqual(pagination.request.makeRequest.getCall(0).args, [data])
+            const firstCallArgs = pagination.request.makeRequest.getCall(0).args
+            assert.deepStrictEqual(firstCallArgs, [data])
             assert.ok(Pagination.sleep.calledWithExactly(expectedTimeout))
 
         })
@@ -114,6 +119,7 @@ describe('Pagination tests', function () {
             assert.deepStrictEqual(result, data)
         })
     })
+
 
     describe('#getPaginated', () => {
         const responseMock = [
@@ -151,17 +157,26 @@ describe('Pagination tests', function () {
 
             sandbox.spy(pagination, pagination.getPaginated.name)
             const data = { url: 'google.com', page: 1 }
-            const secondCallExpectation = { ...data, page: responseMock[0].tid, }
-            const thirdCallExpectation = { ...secondCallExpectation, page: responseMock[1].tid }
+
+            const secondCallExpectation = {
+                ...data,
+                page: responseMock[0].tid,
+            }
+            const thirdCallExpectation = {
+                ...secondCallExpectation,
+                page: responseMock[1].tid
+            }
 
             for await (const result of pagination.getPaginated(data)) { }
 
-            assert.deepStrictEqual(pagination.handleRequest.getCall(0).firstArg, data)
-            assert.deepStrictEqual(pagination.handleRequest.getCall(1).firstArg, secondCallExpectation)
-            assert.deepStrictEqual(pagination.handleRequest.getCall(2).firstArg, thirdCallExpectation)
+            const getFirstArgFromCall = value => pagination.handleRequest.getCall(value).firstArg
+            assert.deepStrictEqual(getFirstArgFromCall(0), data)
+            assert.deepStrictEqual(getFirstArgFromCall(1), secondCallExpectation)
+            assert.deepStrictEqual(getFirstArgFromCall(2), thirdCallExpectation)
 
 
         })
+        
         it(`should stop requesting when request returns an empty array`, async () => {
             const expectedThreshold = 20
             const pagination = new Pagination();
@@ -180,7 +195,10 @@ describe('Pagination tests', function () {
                 .onCall(1).resolves([])
             const data = { url: 'google.com', page: 1 }
             const iterator = await pagination.getPaginated(data)
-            const [firstResult, secondResult] = await Promise.all([iterator.next(), iterator.next()])
+            const [firstResult, secondResult] = await Promise.all([
+                iterator.next(),
+                iterator.next()
+            ])
 
             const expectedFirstCall = { done: false, value: [responseMock[0]] }
             assert.deepStrictEqual(firstResult, expectedFirstCall)

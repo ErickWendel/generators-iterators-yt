@@ -1,14 +1,48 @@
+pagination.js
+    class 
+        options 
 
-describe('#handleRequest', () => {
+    getPaginated
+    handleRequest 
 
-    it(`should retry an request twice before throwing an exception`)
-    it(`should return data from request when succeded`)
-})
+pagination.test.js 
+    setup 
+    describe('#handleRequest', () => {
 
-describe('#getPaginated', () => {
+        it(`should retry an request twice before throwing an exception and validate request params and flow`)
+        
+        it(`should return data from request when succeded`)
+    })
 
-    it(`should update request id on each request`)
-    it(`should update tid on each request page`)
-    it(`should call #sleep twice after two pages`)
-    it(`should stop requesting when request returns an empty array`)
-})
+first it 
+    (1o)
+pagination 
+    handleRequest
+    all 
+pagination.test.js 
+    2o it all 
+
+pagination.test.js 
+    describe('#Pagination')
+        it(`#sleep`)
+
+pagination.test.js 
+
+    describe('#getPaginated', () => {
+        it(`should update request id on each request`)
+        it(`should stop requesting when request returns an empty array`)
+    })
+
+pagination.test.js 
+    getPaginated first it all
+
+pagination.js 
+    getPaginated all 
+
+pagination.test.js 
+    second it all 
+npm test 
+npm run test:cov
+show HTML 
+
+index.js 
