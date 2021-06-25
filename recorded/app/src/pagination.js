@@ -36,7 +36,7 @@ class Pagination {
             console.error(`[${retries}] an error: [${error.message}] has happened! trying again in ${this.retryTimeout}ms`)
             await Pagination.sleep(this.retryTimeout)
 
-            return this.handleRequest({ url, page, retries: retries += 1 })
+            return this.handleRequest({ url, page, retries: retries + 1 })
         }
     }
     static async sleep(ms) {
